@@ -15,7 +15,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import javax.security.auth.login.LoginException;
-import java.awt.*;
+import java.awt.Color;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -99,8 +99,6 @@ public class mainBot extends ListenerAdapter {
                 int[] crates = accounts.getCrates(userProfile);
                 System.out.println(crates[0]+ " " +crates[1]+ " "+ crates[2]);
                 System.out.println(event.getAuthor().getId());
-                //Iterate over employee array
-                //Might need to create iteration
 
             } catch (IOException | ParseException e) {
                 e.printStackTrace();
@@ -804,13 +802,8 @@ public class mainBot extends ListenerAdapter {
                 eb.build();
                 channel.sendMessage(eb.build()).queue();
             }
-            //TODO add itupdate to update accounts when json starter values change (adding new crate)
 
         }
-        //if (event.getMessage().getContentRaw().toLowerCase().startsWith("it")) { }
     }
-
-
-
 }
 
