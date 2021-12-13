@@ -68,6 +68,8 @@ public class mainBot extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
+        //Logs in console any user messages
+        //TODO make the bot channel specific + config file
         System.out.println("Message received from user: " +
                 event.getAuthor().getName() + ": " +
                 event.getMessage().getContentDisplay()
@@ -84,10 +86,24 @@ public class mainBot extends ListenerAdapter {
             eb.addField("itcredits:", " displays current credit count", false);
             eb.addField("ithf (amount) {tails/heads}:", " headflips credits", false);
             eb.addField("itlower (amount) (number 1-100):", " casino game, if the random number is lower then the number you chose you win", false);
+            eb.addField("itcrates (args {o | i | crate ID) {quantity of crates to buy}:", " Buy crates and crack 'em open", false);
             eb.addField("itsend (amount) (user):", " send credits from your account to another user", false);
             eb.setFooter("Created by: Platform40");
             eb.build();
             channel.sendMessage(eb.build()).queue();
+        }
+        if (event.getMessage().getContentRaw().toLowerCase().startsWith("itadmin")) {
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.setTitle("Command List", null);
+            eb.setColor(new Color(0xE2BB46));
+            eb.setDescription("A list of available admin commands");
+            eb.addField("ituserinfo", " outputs sender's file to console", false);
+            eb.addField("itadd", " allows admins to add and remove funds from account", false);
+            //TODO allow admins to change config file
+            eb.setFooter("Created by: Platform40");
+            eb.build();
+            channel.sendMessage(eb.build()).queue();
+            
         }
         if (event.getMessage().getContentRaw().toLowerCase().startsWith("ituserinfo")) {
             try (FileReader reader = new FileReader(userProfile + ".json")) {
@@ -119,7 +135,7 @@ public class mainBot extends ListenerAdapter {
             } catch (IndexOutOfBoundsException | IOException e) {
                 e.printStackTrace();
             } catch (ClassCastException e) {
-                channel.sendMessage(event.getAuthor().getAsMention() + " You are using an old account, or your data was corrupted hang on a sec").queue();
+                channel.sendMessage(event.getAuthor().getAsMention() + " You are using an old account, or your data was corrupted").queue();
             }
 
         }
