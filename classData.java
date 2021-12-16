@@ -14,7 +14,29 @@ import org.json.simple.JSONObject;
 public class classData extends ListenerAdapter{
     JSONObject obj = new JSONObject();
     JSONArray array = new JSONArray();
+    JSONObject configOBJ = new JSONObject();
+    JSONArray configArray = new JSONArray
     JSONParser parser = new JSONParser();
+    public String newConfig()
+    {
+        /*
+        * Checks for existing config file otherwise created new empty config file
+        */
+         try (FileReader reader = new FileReader("config.json"))
+        {
+            JSONObject obj = (JSONObject) parser.parse(reader);
+            String allowedChannels = (String) obj.get("Channels:");
+            String privUsers = (String) obj.get("Admins:");
+            return = "Config File Found!";
+        }
+            catch (FileNotFoundException e)
+        {
+                configOBJ.put("Channels:", 0);
+                array.add(0);
+                configOBJ.put("Priv Users", configArray);
+                return "No Config File Found!"+"%n"+"New Config File Created!";
+        }
+    }
     public String newAccount(String userID, String credits) {
         String FOS = "No info";
         try (FileReader reader = new FileReader(userID+".json"))
