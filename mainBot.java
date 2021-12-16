@@ -33,7 +33,10 @@ public class mainBot extends ListenerAdapter {
     public String authorID = " ";
     public String credits = "";
     public String receiverString = "";
-
+    //Add admin userID for itadd command
+    public int admin = 360518983276953611; 
+    //Add channel ids from config file
+    public int[] allowedChannels = new int[]{100, 101}
     public static void main(String[] args) throws LoginException {
 
         String token = System.getenv("Token");
@@ -57,7 +60,8 @@ public class mainBot extends ListenerAdapter {
     @Override
     public void onReady(ReadyEvent event) {
         System.out.println("DeepSpaceCasino is online!");
-
+        System.out.println("For config options see config.json");
+        //Do config file stuff
     }
 
     @Override
@@ -246,7 +250,7 @@ public class mainBot extends ListenerAdapter {
             accounts.editAccount(userProfile, String.valueOf(accountValue));
         }
         if (event.getMessage().getContentRaw().toLowerCase().startsWith("itadd")) {
-            if (event.getAuthor().getId().equals("360518983276953611")) {
+            if (event.getAuthor().getId().equals(admin)) {
                 int i = 0;
                 int a = 0;
                 String creditString = "";
