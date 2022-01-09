@@ -1,0 +1,3 @@
+Fix timer, only working for 1 minute duration
+
+Add checks for bid, auc, and createauc commands (check for correct typing)
