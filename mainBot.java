@@ -1,8 +1,6 @@
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
@@ -15,7 +13,9 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import javax.security.auth.login.LoginException;
+
 import java.awt.Color;
+
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,7 +37,7 @@ public class mainBot extends ListenerAdapter {
 
     public static void main(String[] args) throws LoginException {
 
-        String token = System.getenv("Token");
+        String token = "Nzc5NTE4MTgwMjM3NjM5NzIx.X7hs4A.w9YAtqzW59LcZ-SH2Q0terqXdEg";
         JDABuilder builder = JDABuilder.createDefault(token, GatewayIntent.GUILD_MESSAGE_REACTIONS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.DIRECT_MESSAGE_REACTIONS, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.DIRECT_MESSAGE_TYPING);
 
         builder.addEventListeners(new mainBot());
@@ -47,7 +48,7 @@ public class mainBot extends ListenerAdapter {
         // Disable compression (not recommended)
         builder.setCompression(Compression.NONE);
         // Set activity (like "playing Something")
-        builder.setActivity(Activity.playing("Starscape! type ithelp"));
+        builder.setActivity(Activity.playing("Starscape"));
 
         builder.build();
 
@@ -59,51 +60,68 @@ public class mainBot extends ListenerAdapter {
         System.out.println("DeepSpaceCasino is online!");
 
     }
-
     @Override
     public void onMessageReactionAdd(MessageReactionAddEvent event)
     {
 
     }
-
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         //Logs in console any user messages
+        boolean admin = false;
         //TODO make the bot channel specific + config file
         System.out.println("Message received from user: " +
                 event.getAuthor().getName() + ": " +
                 event.getMessage().getContentDisplay()
 
         );
+
         MessageChannel channel = event.getChannel();
         String userProfile = event.getAuthor().getId();
-
+        Member sender = event.getGuild().getMemberById(userProfile);
+        Guild guild = event.getGuild();
+        List<Role> roles = guild.getRolesByName("CasinoAdmin", true);
+        List<Member> member = guild.getMembersWithRoles(roles);
+        if(member.contains(sender))
+        {
+            admin = true;
+        }
         if (event.getMessage().getContentRaw().toLowerCase().startsWith("ithelp")) {
             EmbedBuilder eb = new EmbedBuilder();
             eb.setTitle("Command List", null);
             eb.setColor(new Color(0xE2BB46));
             eb.setDescription("A full list of valid commands");
+            eb.addField("itnew:", " creates account for new users", false);
             eb.addField("itcredits:", " displays current credit count", false);
             eb.addField("ithf (amount) {tails/heads}:", " headflips credits", false);
-            eb.addField("itlower (amount) (number 1-100):", " casino game, if the random number is lower then the number you chose you win", false);
-            eb.addField("itcrates (args {o | i | crate ID) {quantity of crates to buy}:", " Buy crates and crack 'em open", false);
+            eb.addField("itlower (number 1-100) (amount):", " casino game, if the random number is lower then the number you chose you win", false);
+            eb.addField("itcrates (args o | i | crate ID) {quantity of crates to buy 1-9}:", " Buy crates and crack 'em open", false);
             eb.addField("itsend (amount) (user):", " send credits from your account to another user", false);
             eb.setFooter("Created by: Platform40");
             eb.build();
-            channel.sendMessage(eb.build()).queue();
+            channel.sendMessageEmbeds(eb.build()).queue();
         }
-        if (event.getMessage().getContentRaw().toLowerCase().startsWith("itadmin")) {
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.setTitle("Command List", null);
-            eb.setColor(new Color(0xE2BB46));
-            eb.setDescription("A list of available admin commands");
-            eb.addField("ituserinfo", " outputs sender's file to console", false);
-            eb.addField("itadd", " allows admins to add and remove funds from account", false);
-            //TODO allow admins to change config file
-            eb.setFooter("Created by: Platform40");
-            eb.build();
-            channel.sendMessage(eb.build()).queue();
-            
+        if (event.getMessage().getContentRaw().toLowerCase().startsWith("itadmin"))
+        {
+            if(admin)
+            {
+                EmbedBuilder eb = new EmbedBuilder();
+                eb.setTitle("Command List", null);
+                eb.setColor(new Color(0xE2BB46));
+                eb.setDescription("A list of available admin commands");
+                eb.addField("ituserinfo", " outputs sender's file to console", false);
+                eb.addField("itadd", " allows admins to add and remove funds from account", false);
+                //TODO allow admins to change config file
+                eb.setFooter("Created by: Platform40");
+                eb.build();
+                channel.sendMessageEmbeds(eb.build()).queue();
+            }
+            else
+            {
+                channel.sendMessage("Lacking permissions").queue();
+            }
+
+
         }
         if (event.getMessage().getContentRaw().toLowerCase().startsWith("ituserinfo")) {
             try (FileReader reader = new FileReader(userProfile + ".json")) {
@@ -129,7 +147,7 @@ public class mainBot extends ListenerAdapter {
                 eb.setAuthor("Deep Space Casino", "https://discord.gg/hZHQ9ge9yH", "https://cdn.discordapp.com/avatars/779518180237639721/f6a599b282b2f30dac67b4855d433002.png?size=1024");
                 eb.addField("You have: ", credits + " Credits", false);
                 eb.build();
-                channel.sendMessage(eb.build()).queue();
+                channel.sendMessageEmbeds(eb.build()).queue();
             } catch (FileNotFoundException e) {
                 channel.sendMessage(event.getAuthor().getAsMention() + " Couldn't find your account create one with itnew").queue();
             } catch (IndexOutOfBoundsException | IOException e) {
@@ -203,7 +221,7 @@ public class mainBot extends ListenerAdapter {
                         eb.setAuthor("Deep Space Casino", "https://discord.gg/hZHQ9ge9yH", "https://cdn.discordapp.com/avatars/779518180237639721/f6a599b282b2f30dac67b4855d433002.png?size=1024");
                         eb.addField("Result", "Coin: heads, You won! +" + amtInt, false);
                         eb.build();
-                        channel.sendMessage(eb.build()).queue();
+                        channel.sendMessageEmbeds(eb.build()).queue();
                     }
                     if (choice.equals("tails")) {
                         accountValue += amtInt;
@@ -212,7 +230,7 @@ public class mainBot extends ListenerAdapter {
                         eb.setAuthor("Deep Space Casino", "https://discord.gg/hZHQ9ge9yH", "https://cdn.discordapp.com/avatars/779518180237639721/f6a599b282b2f30dac67b4855d433002.png?size=1024");
                         eb.addField("Result", "Coin: tails, You won! +" + amtInt, false);
                         eb.build();
-                        channel.sendMessage(eb.build()).queue();
+                        channel.sendMessageEmbeds(eb.build()).queue();
                     }
                 } else if (choice.equals("tails") || choice.equals("heads") && !error) {
                     if (choice.equals("heads")) {
@@ -222,7 +240,7 @@ public class mainBot extends ListenerAdapter {
                         eb.setAuthor("Deep Space Casino", "https://discord.gg/hZHQ9ge9yH", "https://cdn.discordapp.com/avatars/779518180237639721/f6a599b282b2f30dac67b4855d433002.png?size=1024");
                         eb.addField("Result", "Coin: tails, You lose -" + amtInt, false);
                         eb.build();
-                        channel.sendMessage(eb.build()).queue();
+                        channel.sendMessageEmbeds(eb.build()).queue();
                     } else if (choice.equals("tails")) {
                         accountValue -= amtInt;
                         EmbedBuilder eb = new EmbedBuilder();
@@ -230,7 +248,7 @@ public class mainBot extends ListenerAdapter {
                         eb.setAuthor("Deep Space Casino", "https://discord.gg/hZHQ9ge9yH", "https://cdn.discordapp.com/avatars/779518180237639721/f6a599b282b2f30dac67b4855d433002.png?size=1024");
                         eb.addField("Result", "Coin: heads, You lose -" + amtInt, false);
                         eb.build();
-                        channel.sendMessage(eb.build()).queue();
+                        channel.sendMessageEmbeds(eb.build()).queue();
                     }
                 } else if (!error) {
                     channel.sendMessage(event.getAuthor().getAsMention() + " **Eek** Improper formatting, try 'ithf (amount) (tails/heads)").queue();
@@ -246,7 +264,7 @@ public class mainBot extends ListenerAdapter {
             accounts.editAccount(userProfile, String.valueOf(accountValue));
         }
         if (event.getMessage().getContentRaw().toLowerCase().startsWith("itadd")) {
-            if (event.getAuthor().getId().equals("360518983276953611")) {
+            if (admin) {
                 int i = 0;
                 int a = 0;
                 String creditString = "";
@@ -363,7 +381,7 @@ public class mainBot extends ListenerAdapter {
                         eb.addField("Rolled:", "" + randomNum, false);
                         eb.addField("You won!", "+" + newWagerInt, false);
                         eb.build();
-                        channel.sendMessage(eb.build()).queue();
+                        channel.sendMessageEmbeds(eb.build()).queue();
                         accountValue = accountValue + newWagerInt;
                     } else {
                         EmbedBuilder eb = new EmbedBuilder();
@@ -372,7 +390,7 @@ public class mainBot extends ListenerAdapter {
                         eb.addField("Rolled:", "" + randomNum, false);
                         eb.addField("You lost", "-" + wagerInt, false);
                         eb.build();
-                        channel.sendMessage(eb.build()).queue();
+                        channel.sendMessageEmbeds(eb.build()).queue();
                         accountValue = accountValue - wagerInt;
                     }
                 } else if (wagerInt > accountValue && accountValue != -1 && !error) {
@@ -452,7 +470,7 @@ public class mainBot extends ListenerAdapter {
                         eb.setColor(new Color(0xE2BB46));
                         eb.setAuthor("Deep Space Casino", "https://discord.gg/hZHQ9ge9yH", "https://cdn.discordapp.com/avatars/779518180237639721/f6a599b282b2f30dac67b4855d433002.png?size=1024");
                         eb.addField("Successfully sent: " + credits, "", false);
-                        channel.sendMessage(eb.build()).queue();
+                        channel.sendMessageEmbeds(eb.build()).queue();
                     } else {
                         channel.sendMessage(returnVal).queue();
                     }
@@ -519,7 +537,6 @@ public class mainBot extends ListenerAdapter {
                         error = true;
                     }
                     if ((crateID == 1 || crateID == 2 || crateID == 3) && !error) {
-                        //TODO get quantity, remove credits, add crates
                         try {
                             crateQuantity = Integer.parseInt(crateAmount);
                         } catch (NumberFormatException e) {
@@ -561,7 +578,7 @@ public class mainBot extends ListenerAdapter {
                                     eb.setColor(new Color(0xE2BB46));
                                     eb.setAuthor("Deep Space Casino", "https://discord.gg/hZHQ9ge9yH", "https://cdn.discordapp.com/avatars/779518180237639721/f6a599b282b2f30dac67b4855d433002.png?size=1024");
                                     eb.addField("Successfully bought: " + crateAmount + " tier 1 crate(s) <:asteroidt1:866166261087207464>", "", false);
-                                    channel.sendMessage(eb.build()).queue();
+                                    channel.sendMessageEmbeds(eb.build()).queue();
                                 }
 
                             } else if (crateID == 2 && !error) {
@@ -573,7 +590,7 @@ public class mainBot extends ListenerAdapter {
                                     eb.setColor(new Color(0xE2BB46));
                                     eb.setAuthor("Deep Space Casino", "https://discord.gg/hZHQ9ge9yH", "https://cdn.discordapp.com/avatars/779518180237639721/f6a599b282b2f30dac67b4855d433002.png?size=1024");
                                     eb.addField("Successfully bought: " + crateAmount + " tier 2 crate(s) <:asteroidt2:866166260487815189>", "", false);
-                                    channel.sendMessage(eb.build()).queue();
+                                    channel.sendMessageEmbeds(eb.build()).queue();
                                 }
 
 
@@ -586,7 +603,7 @@ public class mainBot extends ListenerAdapter {
                                     eb.setColor(new Color(0xE2BB46));
                                     eb.setAuthor("Deep Space Casino", "https://discord.gg/hZHQ9ge9yH", "https://cdn.discordapp.com/avatars/779518180237639721/f6a599b282b2f30dac67b4855d433002.png?size=1024");
                                     eb.addField("Successfully bought: " + crateAmount + " tier 3 crate(s) <:asteroidt3:866166261040545833>", "", false);
-                                    channel.sendMessage(eb.build()).queue();
+                                    channel.sendMessageEmbeds(eb.build()).queue();
                                 }
 
                             }
@@ -609,7 +626,7 @@ public class mainBot extends ListenerAdapter {
                     eb.addField("Tier 2 <:asteroidt2:866166260487815189>", String.valueOf(crates[1]), false);
                     eb.addField("Tier 3 <:asteroidt3:866166261040545833>", String.valueOf(crates[2]), false);
                     eb.build();
-                    channel.sendMessage(eb.build()).queue();
+                    channel.sendMessageEmbeds(eb.build()).queue();
 
                 } else if (matchFound4) {
                     Pattern pattern5 = Pattern.compile("\\s\\d");
@@ -769,28 +786,24 @@ public class mainBot extends ListenerAdapter {
                             eb.addField("Opening", ". . .", false);
                             eb.build();
 
-                            channel.sendMessage(eb.build()).queue();
-                            Message openingMsg = event.getMessage();
-                            List<Message> history = event.getTextChannel().getHistory().retrievePast(10).complete();
+                            channel.sendMessageEmbeds(eb.build()).queue();
+
+                            List<Message> history = event.getTextChannel().getHistory().retrievePast(6).completeAfter(100, TimeUnit.MILLISECONDS);
                             Boolean edits = false;
                             for (int i = 0; i < history.size(); i++) {
                                 if (history.get(i).getAuthor().getId().equals("779518180237639721") && !edits) {
                                     try {
                                         if (history.get(i).getEmbeds().get(0).getFields().get(0).getValue().equals(". . .")) {
-                                            try {
-                                                Thread.sleep(150);
-                                            } catch (InterruptedException e) {
-                                                Thread.currentThread().interrupt();
-                                                e.printStackTrace();
-                                            }
-                                            edits = true;
-                                            EmbedBuilder editedEB = new EmbedBuilder();
-                                            editedEB.setColor(new Color(0xE2BB46));
-                                            editedEB.setAuthor("Deep Space Casino", "https://discord.gg/hZHQ9ge9yH", "https://cdn.discordapp.com/avatars/779518180237639721/f6a599b282b2f30dac67b4855d433002.png?size=1024");
-                                            editedEB.addField("You won +", String.valueOf(crateCreds), false);
-                                            editedEB.build();
-                                            openingMsg.delete();
-                                            msg.reply(editedEB.build()).queue();
+                                            String openingMSG = null;
+                                                edits = true;
+                                                EmbedBuilder editedEB = new EmbedBuilder();
+                                                editedEB.setColor(new Color(0xE2BB46));
+                                                editedEB.setAuthor("Deep Space Casino", "https://discord.gg/hZHQ9ge9yH", "https://cdn.discordapp.com/avatars/779518180237639721/f6a599b282b2f30dac67b4855d433002.png?size=1024");
+                                                editedEB.addField("You won +", String.valueOf(crateCreds), false);
+                                                history.get(i).editMessageEmbeds(editedEB.build()).queueAfter(75, TimeUnit.MILLISECONDS);
+
+                                            //TODO fix this shit
+
                                             int _credits = Integer.parseInt(accounts.getCredits(userProfile)) + crateCreds;
                                             accounts.editAccount(userProfile, String.valueOf(_credits));
 
@@ -816,10 +829,13 @@ public class mainBot extends ListenerAdapter {
                 eb.addField("Tier 2 <:asteroidt2:866166260487815189>", "Price: 2000", false);
                 eb.addField("Tier 3 <:asteroidt3:866166261040545833>", "Price: 5000", false);
                 eb.build();
-                channel.sendMessage(eb.build()).queue();
+                channel.sendMessageEmbeds(eb.build()).queue();
             }
+
+        }
+        if (event.getMessage().getContentRaw().toLowerCase().startsWith("itprofit") && admin==true)
+        {
 
         }
     }
 }
-
