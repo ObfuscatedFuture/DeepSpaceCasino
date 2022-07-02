@@ -37,7 +37,7 @@ public class mainBot extends ListenerAdapter {
 
     public static void main(String[] args) throws LoginException {
 
-        String token = "Nzc5NTE4MTgwMjM3NjM5NzIx.X7hs4A.w9YAtqzW59LcZ-SH2Q0terqXdEg";
+        String token = "REDACTED";
         JDABuilder builder = JDABuilder.createDefault(token, GatewayIntent.GUILD_MESSAGE_REACTIONS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.DIRECT_MESSAGE_REACTIONS, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.DIRECT_MESSAGE_TYPING);
 
         builder.addEventListeners(new mainBot());
